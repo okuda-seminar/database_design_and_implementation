@@ -7,7 +7,7 @@ import (
 )
 
 // Define the int size
-const intSize = 4
+const IntSize = 4
 
 // Page represents a block of memory that can store data.
 type Page struct {
@@ -26,7 +26,7 @@ func NewPageFromBytes(b []byte) *Page {
 
 // GetInt retrieves an integer from the specified offset.
 func (p *Page) GetInt(offset int) (int32, error) {
-	if offset+intSize > len(p.data) {
+	if offset+IntSize > len(p.data) {
 		return 0, errors.New("offset out of range")
 	}
 	return int32(binary.BigEndian.Uint32(p.data[offset:])), nil
@@ -34,7 +34,7 @@ func (p *Page) GetInt(offset int) (int32, error) {
 
 // SetInt writes an integer to the specified offset.
 func (p *Page) SetInt(offset int, n int32) error {
-	if offset+intSize > len(p.data) {
+	if offset+IntSize > len(p.data) {
 		return errors.New("offset out of range")
 	}
 	binary.BigEndian.PutUint32(p.data[offset:], uint32(n))
@@ -43,23 +43,23 @@ func (p *Page) SetInt(offset int, n int32) error {
 
 // GetBytes retrieves a byte array from the specified offset.
 func (p *Page) GetBytes(offset int) ([]byte, error) {
-	if offset+intSize > len(p.data) {
+	if offset+IntSize > len(p.data) {
 		return nil, errors.New("offset out of range")
 	}
 	length := int(binary.BigEndian.Uint32(p.data[offset:]))
-	if offset+intSize+length > len(p.data) {
+	if offset+IntSize+length > len(p.data) {
 		return nil, errors.New("byte array out of range")
 	}
-	return p.data[offset+intSize : offset+intSize+length], nil
+	return p.data[offset+IntSize : offset+IntSize+length], nil
 }
 
 // SetBytes stores a byte array at the specified offset.
 func (p *Page) SetBytes(offset int, b []byte) error {
-	if offset+intSize+len(b) > len(p.data) {
+	if offset+IntSize+len(b) > len(p.data) {
 		return errors.New("offset out of range")
 	}
 	binary.BigEndian.PutUint32(p.data[offset:], uint32(len(b)))
-	copy(p.data[offset+intSize:], b)
+	copy(p.data[offset+IntSize:], b)
 	return nil
 }
 
@@ -80,7 +80,7 @@ func (p *Page) SetString(offset int, s string) error {
 
 // MaxLength returns the maximum byte length required to store a string of given length.
 func MaxLength(strlen int) int {
-	return intSize + strlen
+	return IntSize + strlen
 }
 
 // Contents returns the raw byte slice.
