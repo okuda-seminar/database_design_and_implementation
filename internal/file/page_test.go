@@ -72,7 +72,7 @@ func TestPageOperations(t *testing.T) {
 
 	// Test MaxLength
 	maxLen := MaxLength(10)
-	expectedLen := 10 + intSize
+	expectedLen := 10 + IntSize
 	if maxLen != expectedLen {
 		t.Errorf("Expected %d, got %d", expectedLen, maxLen)
 	}
