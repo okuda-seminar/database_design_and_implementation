@@ -3,7 +3,6 @@ package log
 import (
 	"errors"
 	"fmt"
-	"sync"
 
 	"database_design_and_implementation/internal/file"
 )

@@ -10,7 +10,7 @@ import (
 // TestLogIterator tests the log iterator functionality.
 func TestLogIterator(t *testing.T) {
 	blockSize := 1024
-	fm, err := file.NewFileMgr("testdb", blockSize)
+	fm, err := file.NewFileMgr("../../temp", blockSize)
 	if err != nil {
 		t.Fatalf("Failed to create FileMgr: %v", err)
 	}
