@@ -3,7 +3,6 @@ package file
 import (
 	"os"
 	"path/filepath"
-	"sync"
 )
 
 type FileMgr struct {
@@ -13,7 +12,6 @@ type FileMgr struct {
 	openFiles   map[string]*os.File
 	writeCount  int
 	readCount   int
-	mutex       sync.Mutex
 }
 
 func NewFileMgr(dbDirectory string, blockSize int) (*FileMgr, error) {
@@ -48,9 +46,6 @@ func NewFileMgr(dbDirectory string, blockSize int) (*FileMgr, error) {
 }
 
 func (fm *FileMgr) Read(blk BlockId, p []byte) error {
-	fm.mutex.Lock()
-	defer fm.mutex.Unlock()
-
 	file, err := fm.getFile(blk.Filename)
 	if err != nil {
 		return err
@@ -64,8 +59,6 @@ func (fm *FileMgr) Read(blk BlockId, p []byte) error {
 }
 
 func (fm *FileMgr) Write(blk BlockId, p []byte) error {
-	fm.mutex.Lock()
-	defer fm.mutex.Unlock()
 
 	file, err := fm.getFile(blk.Filename)
 	if err != nil {
@@ -80,8 +73,6 @@ func (fm *FileMgr) Write(blk BlockId, p []byte) error {
 }
 
 func (fm *FileMgr) Append(filename string) (BlockId, error) {
-	fm.mutex.Lock()
-	defer fm.mutex.Unlock()
 
 	newBlkNum, err := fm.Length(filename)
 	if err != nil {
