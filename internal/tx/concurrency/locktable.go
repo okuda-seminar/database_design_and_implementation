@@ -8,13 +8,10 @@ import (
 	"database_design_and_implementation/internal/file"
 )
 
-// LockTable is a table that manages locks on blocks.
 var ErrLockAbort = errors.New("lock aborted due to timeout")
 
-// Set the maximum time to wait for a lock.
 const MaxTime = 10 * time.Second
 
-// LockTable manages locks on blocks.
 type LockTable struct {
 	locks   map[file.BlockId]int
 	lockMu  sync.Mutex
@@ -25,17 +22,16 @@ type LockTable struct {
 func NewLockTable(maxTime time.Duration) *LockTable {
 	return &LockTable{
 		locks:   make(map[file.BlockId]int),
-		lockMu:  sync.Mutex{},
 		maxTime: maxTime,
 	}
 }
 
-// SLock acquires a shared lock on the given block.
+// SLock acquires a shared lock on the given block with busy-wait + timeout.
 func (lt *LockTable) SLock(blk file.BlockId) error {
 	start := time.Now()
 	for {
 		lt.lockMu.Lock()
-		if !lt.hasXLock(blk) {
+		if !lt.hasXLockLocked(blk) {
 			lt.locks[blk]++
 			lt.lockMu.Unlock()
 			return nil
@@ -49,12 +45,12 @@ func (lt *LockTable) SLock(blk file.BlockId) error {
 	}
 }
 
-// XLock acquires an exclusive lock on the given block.
+// XLock acquires an exclusive lock on the given block with busy-wait + timeout.
 func (lt *LockTable) XLock(blk file.BlockId) error {
 	start := time.Now()
 	for {
 		lt.lockMu.Lock()
-		if !lt.hasOtherSLocks(blk) {
+		if !lt.hasOtherSLocksLocked(blk) {
 			lt.locks[blk] = -1
 			lt.lockMu.Unlock()
 			return nil
@@ -85,14 +81,14 @@ func (lt *LockTable) Unlock(blk file.BlockId) {
 	}
 }
 
-// hasXLock returns true if the block has an exclusive lock.
-func (lt *LockTable) hasXLock(blk file.BlockId) bool {
+// hasXLockLocked: call this when lockMu is already held
+func (lt *LockTable) hasXLockLocked(blk file.BlockId) bool {
 	val, exists := lt.locks[blk]
 	return exists && val < 0
 }
 
-// hasOtherSLocks returns true if the block has shared locks from other transactions.
-func (lt *LockTable) hasOtherSLocks(blk file.BlockId) bool {
+// hasOtherSLocksLocked: call this when lockMu is already held
+func (lt *LockTable) hasOtherSLocksLocked(blk file.BlockId) bool {
 	val, exists := lt.locks[blk]
-	return exists && val > 0
+	return exists && val > 1
 }
