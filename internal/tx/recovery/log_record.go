@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+
+	"database_design_and_implementation/internal/file"
 )
 
 // The operation types
@@ -40,10 +42,16 @@ func CreateLogRecord(data []byte) (LogRecord, error) {
 	if err := binary.Read(buf, binary.LittleEndian, &opType); err != nil {
 		return nil, err
 	}
+	page := file.NewPage(len(data))
+	page.SetBytes(0, data)
 
-	switch opType {
+	switch int(opType) {
 	case CHECKPOINT:
 		return NewCheckpointRecord(), nil
+	case START:
+		return NewStartRecord(page), nil
+	default:
+		return nil, errors.New("unknown log record type: " + string(opType))
 	}
-	return nil, errors.New("unknown log record type")
+
 }
